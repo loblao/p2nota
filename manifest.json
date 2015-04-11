@@ -1,8 +1,9 @@
 {
-    "name" : "p2nota", // TO DO
-    "version" : "0.0.1",
-    "description" : "trgefwdoihtgtyukoytgij", // TO DO
-    "background": {
+    "name": "P Notas +",
+    "version": "0.0.1",
+    "description": "P Notas +",
+    "background":
+    {
         "scripts": ["background.js"],
         "persistent": false
     },
@@ -10,7 +11,7 @@
     "page_action":
     {
         "default_icon": "icon19.png",
-        "default_title": "p2nota", // TO DO
+        "default_title": "P Notas +",
         "default_popup": "popup.html"
     },
     
