@@ -19,6 +19,11 @@ function success(data)
     }
     
     $('#title').html(data.Dados.Pessoa.Nome);
+    $('#slider').show();
+    $('#bimester').on('change', function()
+                      {
+                        setBimester(this.value);
+                      });
     
     bonusList = [0, 0, 0, 0];
     for (i = 0; i < 4; i++)
