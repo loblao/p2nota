@@ -177,7 +177,7 @@ function handleFront(data, bonusList)
                     // Got all grades
                     total = (p1 + p2) / 2 + bonus;
                     dt = total - 6;
-                    boxHTML += (dt >= 0) ? 'verde">Situação: <b>aprovado</b></span></p>' : 'vermelho">Situação: <b>Rec por <i>' + Math.absd(dt) + '</i> pontos</b></span></p>';
+                    boxHTML += (dt >= 0) ? 'verde">Situação: <b>aprovado</b></span></p>' : 'vermelho">Situação: <b>Rec por <i>' + dt + '</i> pontos</b></span></p>';
                 }
                     
                 boxHTML += '</div>';
