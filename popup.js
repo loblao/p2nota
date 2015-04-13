@@ -122,7 +122,7 @@ function handleFront(data, bonusList)
                 {
                     boxHTML += '<p>P1: ' + p1 + '<br>P2:';
                     // Calc how many questions you need
-                    missingPoints = 12 - p1 - bonus;
+                    missingPoints = 12 - p1 - bonus * 2;
                     boxHTML += ' você precisa de <i>' + missingPoints + '</i> ponto' + ((missingPoints >= 2) ? 's': '') + '</p>';
                         
                     if (missingPoints > 10)
