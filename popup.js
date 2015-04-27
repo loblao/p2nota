@@ -15,7 +15,12 @@ function success(data)
 {
     if (!data.Sucesso)
     {
-        return displayError();
+        return handleError(0, 0, 0);
+    }
+    
+    if (data.Dados.DadosPagina.Matriculas[0].Nome.indexOf('Primeiro Ano - SJC') == -1)
+    {
+        return handleError('showMsg', 0, 'Esta extens&atilde;o funciona exclusivamente para alunos do primeiro ano da unidade SJC.')
     }
     
     $('#title').html(data.Dados.Pessoa.Nome);
@@ -105,7 +110,7 @@ function handleFront(data, bonusList)
         {
             for (i = 0; i < 4; i++)
             {
-                boxHTML = '<div class="gradeframe bim_' + i + '"><h3>' + data.Nome + ' - ' + (i + 1) + 'º Bimestre' + '</h3>';
+                boxHTML = '<div class="gradeframe bim_' + i + '"><h3>' + data.Nome + ' - ' + (i + 1) + '&deg; Bimestre' + '</h3>';
                    
                 bim = bimesters[i];
                 p1 = bim[0];
@@ -123,12 +128,12 @@ function handleFront(data, bonusList)
                     boxHTML += '<p>P1: ' + p1 + '<br>P2:';
                     // Calc how many questions you need
                     missingPoints = 12 - p1 - bonus;
-                    boxHTML += ' você precisa de <i>' + missingPoints + '</i> ponto' + ((missingPoints >= 2) ? 's': '') + '</p>';
+                    boxHTML += ' voc&ecirc; precisa de <i>' + missingPoints + '</i> ponto' + ((missingPoints >= 2) ? 's': '') + '</p>';
                         
                     if (missingPoints > 10)
                     {
                         // Too bad
-                        boxHTML += '<span class="vermelho">Situação irrecuperável, você já está de rec.</span>';
+                        boxHTML += '<span class="vermelho">Situa&ccedil;&atilde;o irrecuper&aacute;vel, voc&ecirc; j&aacute; est&aacute; de rec.</span>';
                     }
                     
                     else
@@ -158,7 +163,7 @@ function handleFront(data, bonusList)
                                     }
                                 
                                     boxHTML += (gotFirstGroup > 1) ? '<br>' : '';
-                                    boxHTML += 'Para ' + numsStr + ' questões, você precisa acertar ' + lastMin;
+                                    boxHTML += 'Para ' + numsStr + ' questões, voc&ecirc; precisa acertar ' + lastMin;
                                     temp = [];
                                 }
 
@@ -176,14 +181,91 @@ function handleFront(data, bonusList)
                     boxHTML += '<p>P1: ' + p1 + '<br>P2: ' + p2 + '<br><span class="';
                     // Got all grades
                     total = (p1 + p2) / 2 + bonus;
-                    dt = total - 6;
-                    boxHTML += (dt >= 0) ? 'verde">Situação: <b>aprovado</b></span></p>' : 'vermelho">Situação: <b>Rec por <i>' + dt + '</i> pontos</b></span></p>';
+                    dt = (total - 6).toFixed(2);
+                    boxHTML += (dt >= 0) ? 'verde">Situa&ccedil;&atilde;o: <b>aprovado</b></span></p>' : 'vermelho">Situa&ccedil;&atilde;o: <b>Rec por <i>' + dt + '</i> pontos</b></span></p>';
                 }
                     
                 boxHTML += '</div>';
                  
                 $('#main').append(boxHTML);
             }
+            
+            // Build the graph
+            width = 400;
+            height = 250;
+            padding = 18;
+            spacing = (width - padding - 1) / 8;
+            scale = height / 10.5;
+            
+            uid = 'canvas-' + Math.round(Math.random() * 100000000); // If you get duplicated UIDs here you are very very very lucky
+            titleNode = $('<div class="gradeframe"><h3>' + data.Nome + ' - Gr&aacute;fico de notas</h3>');
+            canvasNode = $('<canvas/>').attr({'id': uid, 'width': width, 'height': height + 20});
+            $('#graphs').append(titleNode);
+            $('#graphs').append(canvasNode);
+            
+            ctx = document.getElementById(uid).getContext('2d');
+            
+            // Base axis
+            ctx.beginPath();
+            ctx.moveTo(padding, height - 1);
+            ctx.lineTo(width, height - 1);
+            ctx.moveTo(padding, 0);
+            ctx.lineTo(padding, height - 1);
+            ctx.moveTo(padding, 0);
+            ctx.stroke();
+
+            // Grade scale (y-axis)
+            for (g = 0; g < 12; g++)
+            {
+                ctx.fillText(11 - g, 0, g * (height / 11.2) - 1);
+            }
+            
+            // Tests (x-axis)
+            for (g = 0; g < 8; g++)
+            {
+                b = Math.floor(g / 2) + 1;
+                p = (g % 2) + 1;
+                ctx.fillText("B" + b + "/P" + p, g * spacing + (padding / 2), height + 10);
+            }
+            
+            // Helper function
+            _index = 0;
+            function addPoint(bimester, test, move)
+            { 
+                grade = bimesters[bimester][test];
+                x = padding + spacing * _index++;
+                y = height - scale * grade;
+
+                if (y != y) // NaN
+                    return;
+                
+                if (move)
+                {
+                    ctx.moveTo(x, y);
+                }
+                
+                else
+                {
+                    ctx.lineTo(x, y);
+                }
+                
+                
+                _x = ((grade.toString().length >= 2) ? 0 : 5);
+                textX = x + (move ? _x : -_x);
+                    
+                
+                textY = (y + 15 > height) ? y - 15 : y + 15;
+                ctx.fillStyle = (grade >= 6) ? 'green' : 'red';
+                ctx.fillText(grade, textX, textY);
+                ctx.fillStyle = '';
+            }
+            
+            for (g = 0; g < 8; g++)
+            {
+                addPoint(Math.floor(g / 2), g % 2, !g);
+            }
+            
+            ctx.stroke();
         }
     }
 }
@@ -207,7 +289,15 @@ function setBimester(bimester)
 
 function handleError(handler, status, error)
 {
-    RESP.innerHTML = "Sinto muito, ocorreu um erro. Tente novamente.";
+    if (handler == 'showMsg')
+    {
+        RESP.innerHTML = error;
+    }
+    
+    else
+    {
+        RESP.innerHTML = 'Sinto muito, ocorreu um erro. Tente novamente.';
+    }
 }
 
 $.ajax({
