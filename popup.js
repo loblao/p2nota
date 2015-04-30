@@ -8,7 +8,8 @@ function _get_bonus(data, bimester)
     {
         return 0;
     }
-    return parseFloat(notas[bimester].Provas[0].Nota.replace(',', '.'));
+    result = parseFloat(notas[bimester].Provas[0].Nota.replace(',', '.'));
+    return (result == result) ? result : 0; // Handle NaN
 }
 
 function success(data)
@@ -117,13 +118,13 @@ function handleFront(data, bonusList)
                 p2 = bim[1];
                 bonus = bim[2];
                     
-                if (p1 == undefined)
+                if (p1 == undefined || p1 != p1) // Handle NaN
                 {
                     // Got no grades at all
                     boxHTML += '<p>Sem dados</p>';
                 }
-
-                else if (p2 == undefined)
+                    
+                else if (p2 == undefined || p2 != p2) // Handle NaN
                 {
                     boxHTML += '<p>P1: ' + p1 + '<br>P2:';
                     // Calc how many questions you need
@@ -285,6 +286,8 @@ function setBimester(bimester)
             element.hide();
         }
     }
+    
+    $('#bimester')[0].selectedIndex = bimester;
 }
 
 function handleError(handler, status, error)
